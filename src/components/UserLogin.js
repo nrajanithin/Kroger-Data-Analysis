@@ -1,6 +1,7 @@
 import React from 'react'
 import fire from './fire';
 import './user.css';
+import ClipLoader from "react-spinners/ClipLoader";
 import ReactApexChart from "react-apexcharts";
 import { CSVReader } from 'react-papaparse'
 import axios from 'axios';
@@ -12,6 +13,9 @@ class UserLogin extends React.Component
     
         
         state = {
+            move:24,
+            loading:false,
+            raja:'',
             don:[],
             bar:[],
             line:[],
@@ -69,145 +73,135 @@ class UserLogin extends React.Component
                 }
             }
         }
-
-        componentDidMount = ()=>{
-            var raj = [];
-            var phar_ss = [];
-            var phar_nm = [];
-            var food_ss = [];
-            var food_nm = [];
-            var non_food_ss =[];
-            var non_food_nm = [];
-            var west =[];
-            var central = [];
-            var east = [];
-            var south = [];
-            var bfood = [];
-            var bnonfood = [];
-            var bpharma = [];
-            var don_ss =[];
+        getDonut = ()=>{
+            var don_ss = [];
             var don_nm = [];
-            axios.get("http://localhost:5000/")
-            .then(result=>{
-                console.log(result.data);
-                result.data.map(ob => {
-                    phar_ss.push(ob.ss);
-                    phar_nm.push(ob.store_r);
-                    var ph = {
-          
-                        series: phar_ss,
+            axios.get("http://localhost:5000/don").then(result=>
+            {
+                result.data.map(ob=>{
+                    don_nm.push(ob.INCOME_RANGE);
+                    don_ss.push(ob.ss);
+                })
+                var pe = {
+                    series: don_ss,
+                    options: {
+                      chart: {
+                        type: 'donut',
+                        width: 380
+                      },
+                      title: {
+                        text: 'SPEND v/s INCOME RANGE',
+                        align: 'left'
+                      },
+                      labels:don_nm,
+                      responsive: [{
+                        breakpoint: 480,
                         options: {
                           chart: {
-                            width: 380,
-                            type: 'pie',
+                            width: 200
                           },
-                          title: {
-                            text: 'PHARMA v/s REGION',
-                            align: 'left'
-                          },
-                          labels: phar_nm,
-                          responsive: [{
-                            breakpoint: 480,
-                            options: {
-                              chart: {
-                                width: 200
-                              },
-                              legend: {
-                                position: 'bottom'
-                              }
-                            }
-                          }]
-                        },
-                      
-                      
-                      };
-                 
-                    this.setState({pharma:ph})
-                })
+                          legend: {
+                            position: 'bottom'
+                          }
+                        }
+                      }]
+                    },
+                  
+                  
+                  };
+                this.setState({don:pe})
+            
             })
-            .catch(err => {
-                console.log(err);
-            })
-            axios.get("http://localhost:5000/food").then(result=>{
-                console.log(result.data);
+        }
+        getBar = ()=>{
+            var bfood =[]
+            var bnonfood = []
+            var bpharma =  []
+            axios.get("http://localhost:5000/bar").then(result=>{
+                console.log(result);
+                var ref = [];
                 result.data.map(ob => {
-                    food_ss.push(ob.ss);
-                    food_nm.push(ob.store_r);
-                    var ph = {
-          
-                        series: food_ss,
-                        options: {
-                          chart: {
-                            width: 380,
-                            type: 'pie',
-                          },
-                          title: {
-                            text: 'FOOD v/s REGION',
-                            align: 'left'
-                          },
-                          labels: food_nm,
-                          responsive: [{
-                            breakpoint: 480,
-                            options: {
-                              chart: {
-                                width: 200
-                              },
-                              legend: {
-                                position: 'bottom'
-                              }
-                            }
-                          }]
-                        },
-                      
-                      
-                      };
-                 
-                    this.setState({food:ph})
+                    if(ob.department == "FOOD")
+                    {
+                        bfood.push(ob.ss);
+                        ref.push(ob.ss);
+                    }
+                    if(ob.department == "NON-FOOD")
+                    {
+                        bnonfood.push(ob.ss);
+                        ref.push(ob.ss);
+                    }
+                    if(ob.department == "PHARMA")
+                    {
+                        bpharma.push(ob.ss);
+                        ref.push(ob.ss);
+                    }
+                    
                 })
-            })
-            .catch(err => {
-                console.log(err);
-            })
-            axios.get("http://localhost:5000/nonfood").then(result=>{
-                console.log(result.data);
-                result.data.map(ob => {
-                    non_food_ss.push(ob.ss);
-                    non_food_nm.push(ob.store_r);
-                    var ph = {
+                var pd = {
           
-                        series: non_food_ss,
-                        options: {
-                          chart: {
-                            width: 380,
-                            type: 'pie',
-                          },
-                          title: {
-                            text: 'NON-FOOD v/s REGION',
-                            align: 'left'
-                          },
-                          labels: non_food_nm,
-                          responsive: [{
-                            breakpoint: 480,
-                            options: {
-                              chart: {
-                                width: 200
-                              },
-                              legend: {
-                                position: 'bottom'
-                              }
-                            }
-                          }]
+                    series: [{
+                      name: 'FOOD',
+                      data:  bfood
+                    }, {
+                      name: 'NON-FOOD',
+                      data: bnonfood
+                    }, {
+                      name: 'PHARMA',
+                      data: bpharma
+                    }],
+                    options: {
+                      chart: {
+                        type: 'bar',
+                        height: 350,
+                        stacked: true,
+                        toolbar: {
+                          show: true
                         },
-                      
-                      
-                      };
-                 
-                    this.setState({non_food:ph})
-                })
+                        zoom: {
+                          enabled: true
+                        }
+                      },
+                      responsive: [{
+                        breakpoint: 480,
+                        options: {
+                          legend: {
+                            position: 'bottom',
+                            offsetX: -10,
+                            offsetY: 0
+                          }
+                        }
+                      }],
+                      plotOptions: {
+                        bar: {
+                          borderRadius: 8,
+                          horizontal: false,
+                        },
+                      },
+                      xaxis: {
+                        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul','Aug','Sep','Oct','Nov','Dec'],
+                      },
+                      legend: {
+                        position: 'right',
+                        offsetY: 40
+                      },
+                      fill: {
+                        opacity: 1
+                      }
+                    },
+                  
+                  
+                  };
+                  
+                  this.setState({bar:pd});
             })
-            .catch(err => {
-                console.log(err);
-            })
+        }
+        getLine = ()=>{
+            var west = [];
+            var east = [];
+            var central = [];
+            var south = [];
+            var raj = [];
             axios.get("http://localhost:5000/line").then(result=>{
                 console.log(result);
                 var ref = 0;
@@ -230,7 +224,7 @@ class UserLogin extends React.Component
                     }
                     raj.push(ob.ss);
                 })
-                var p = {
+                var pc = {
           
                     series: [
                       {
@@ -314,7 +308,392 @@ class UserLogin extends React.Component
                   
                   
                   };
-                  this.setState({line:p})
+                  this.setState({line:pc})
+            })
+        }
+        getFoodPie = async()=>{
+            console.log("food pie lo vunnam");
+            var food_nm = [];
+            var food_ss = [];
+            axios.get("http://localhost:5000/food").then(result=>{
+                console.log(result.data);
+                result.data.map(ob => {
+                    food_ss.push(ob.ss);
+                    food_nm.push(ob.store_r);
+                    var pa = {
+          
+                        series: food_ss,
+                        options: {
+                          chart: {
+                            width: 380,
+                            type: 'pie',
+                          },
+                          title: {
+                            text: 'FOOD v/s REGION',
+                            align: 'left'
+                          },
+                          labels: food_nm,
+                          responsive: [{
+                            breakpoint: 480,
+                            options: {
+                              chart: {
+                                width: 200
+                              },
+                              legend: {
+                                position: 'bottom'
+                              }
+                            }
+                          }]
+                        },
+                      
+                      
+                      };
+                 
+                    this.setState({food:pa})
+                })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+           
+        }
+        getNonfoodPie = async()=>{
+            var non_food_nm = [];
+            var non_food_ss = [];
+            axios.get("http://localhost:5000/nonfood").then(result=>{
+                console.log(result.data);
+                result.data.map(ob => {
+                    non_food_ss.push(ob.ss);
+                    non_food_nm.push(ob.store_r);
+                    var pb = {
+          
+                        series: non_food_ss,
+                        options: {
+                          chart: {
+                            width: 380,
+                            type: 'pie',
+                          },
+                          title: {
+                            text: 'NON-FOOD v/s REGION',
+                            align: 'left'
+                          },
+                          labels: non_food_nm,
+                          responsive: [{
+                            breakpoint: 480,
+                            options: {
+                              chart: {
+                                width: 200
+                              },
+                              legend: {
+                                position: 'bottom'
+                              }
+                            }
+                          }]
+                        },
+                      
+                      
+                      };
+                 
+                    this.setState({non_food:pb})
+                })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+        }
+        getPharma = async()=>{
+            var phar_ss = [];
+            var phar_nm = [];
+            axios.get("http://localhost:5000/")
+            .then(result=>{
+                console.log(result.data);
+                result.data.map(ob => {
+                    phar_ss.push(ob.ss);
+                    phar_nm.push(ob.store_r);
+                    var ph = {
+          
+                        series: phar_ss,
+                        options: {
+                          chart: {
+                            width: 380,
+                            type: 'pie',
+                          },
+                          title: {
+                            text: 'PHARMA v/s REGION',
+                            align: 'left'
+                          },
+                          labels: phar_nm,
+                          responsive: [{
+                            breakpoint: 480,
+                            options: {
+                              chart: {
+                                width: 200
+                              },
+                              legend: {
+                                position: 'bottom'
+                              }
+                            }
+                          }]
+                        },
+                      
+                      
+                      };
+                 
+                    this.setState({pharma:ph})
+                })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+        }
+        getPie = ()=>{
+           
+        }
+        componentDidMount = ()=>{
+            var raj = [];
+            var phar_ss = [];
+            var phar_nm = [];
+            var food_ss = [];
+            var food_nm = [];
+            var non_food_ss =[];
+            var non_food_nm = [];
+            var west =[];
+            var central = [];
+            var east = [];
+            var south = [];
+            var bfood = [];
+            var bnonfood = [];
+            var bpharma = [];
+            var don_ss =[];
+            var don_nm = [];
+            axios.get("http://localhost:5000/")
+            .then(result=>{
+                console.log(result.data);
+                result.data.map(ob => {
+                    phar_ss.push(ob.ss);
+                    phar_nm.push(ob.store_r);
+                    var ph = {
+          
+                        series: phar_ss,
+                        options: {
+                          chart: {
+                            width: 380,
+                            type: 'pie',
+                          },
+                          title: {
+                            text: 'PHARMA v/s REGION',
+                            align: 'left'
+                          },
+                          labels: phar_nm,
+                          responsive: [{
+                            breakpoint: 480,
+                            options: {
+                              chart: {
+                                width: 200
+                              },
+                              legend: {
+                                position: 'bottom'
+                              }
+                            }
+                          }]
+                        },
+                      
+                      
+                      };
+                 
+                    this.setState({pharma:ph})
+                })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+            axios.get("http://localhost:5000/food").then(result=>{
+                console.log(result.data);
+                result.data.map(ob => {
+                    food_ss.push(ob.ss);
+                    food_nm.push(ob.store_r);
+                    var pa = {
+          
+                        series: food_ss,
+                        options: {
+                          chart: {
+                            width: 380,
+                            type: 'pie',
+                          },
+                          title: {
+                            text: 'FOOD v/s REGION',
+                            align: 'left'
+                          },
+                          labels: food_nm,
+                          responsive: [{
+                            breakpoint: 480,
+                            options: {
+                              chart: {
+                                width: 200
+                              },
+                              legend: {
+                                position: 'bottom'
+                              }
+                            }
+                          }]
+                        },
+                      
+                      
+                      };
+                 
+                    this.setState({food:pa})
+                })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+            axios.get("http://localhost:5000/nonfood").then(result=>{
+                console.log(result.data);
+                result.data.map(ob => {
+                    non_food_ss.push(ob.ss);
+                    non_food_nm.push(ob.store_r);
+                    var pb = {
+          
+                        series: non_food_ss,
+                        options: {
+                          chart: {
+                            width: 380,
+                            type: 'pie',
+                          },
+                          title: {
+                            text: 'NON-FOOD v/s REGION',
+                            align: 'left'
+                          },
+                          labels: non_food_nm,
+                          responsive: [{
+                            breakpoint: 480,
+                            options: {
+                              chart: {
+                                width: 200
+                              },
+                              legend: {
+                                position: 'bottom'
+                              }
+                            }
+                          }]
+                        },
+                      
+                      
+                      };
+                 
+                    this.setState({non_food:pb})
+                })
+            })
+            .catch(err => {
+                console.log(err);
+            })
+            axios.get("http://localhost:5000/line").then(result=>{
+                console.log(result);
+                var ref = 0;
+                result.data.map(ob =>{
+                    if(ob.store_r == 'WEST')
+                    {
+                        west.push(ob.ss);
+                    }
+                    if(ob.store_r == 'EAST')
+                    {
+                        east.push(ob.ss);
+                    }
+                    if(ob.store_r == 'CENTRAL')
+                    {
+                        central.push(ob.ss);
+                    }
+                    if(ob.store_r == 'SOUTH')
+                    {
+                        south.push(ob.ss)
+                    }
+                    raj.push(ob.ss);
+                })
+                var pc = {
+          
+                    series: [
+                      {
+                        name: "EAST",
+                        data: east
+                      },
+                      {
+                        name: "WEST",
+                        data: west
+                      },
+                      {
+                        name: "CENTRAL",
+                        data: central
+                      },
+                      {
+                        name: "SOUTH",
+                        data: south
+                      }
+                    ],
+                    options: {
+                      chart: {
+                        height: 350,
+                        type: 'line',
+                        dropShadow: {
+                          enabled: true,
+                          color: '#000',
+                          top: 18,
+                          left: 7,
+                          blur: 10,
+                          opacity: 0.2
+                        },
+                        toolbar: {
+                          show: false
+                        }
+                      },
+                      colors: ['#9c0f08', '#91db1a','#faa200', '#f714ba'],
+                      dataLabels: {
+                        enabled: false,
+                      },
+                      stroke: {
+                        curve: 'smooth',
+                        width:2
+                      },
+                      title: {
+                        text: 'Sales v/s Month',
+                        align: 'left'
+                      },
+                      grid: {
+                        borderColor: '#e7e7e7',
+                        row: {
+                          colors: ['#FFFFFF', '#FFFFFF','#FFFFFF', '#FFFFFF'], // takes an array which will be repeated on columns
+                          opacity: 0.5
+                        },
+                      },
+                      markers: {
+                        size: 1,
+                        strokeColors: ['#9c0f08', '#91db1a','#faa200', '#f714ba'],
+                        strokeWidth: 6
+                      },
+                      xaxis: {
+                        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul','Aug','Sep','Oct','Nov','Dec'],
+                        title: {
+                          text: 'Month'
+                        }
+                      },
+                      yaxis: {
+                        title: {
+                          text: 'Total Sales'
+                        },
+                        min: Math.min(...raj)-10,
+                        max: Math.max(...raj)+10
+                      },
+                      legend: {
+                        position: 'top',
+                        horizontalAlign: 'right',
+                        floating: true,
+                        offsetY: -25,
+                        offsetX: -5
+                      }
+                    },
+                  
+                  
+                  };
+                  this.setState({line:pc})
             })
             axios.get("http://localhost:5000/bar").then(result=>{
                 console.log(result);
@@ -337,7 +716,7 @@ class UserLogin extends React.Component
                     }
                     
                 })
-                var p = {
+                var pd = {
           
                     series: [{
                       name: 'FOOD',
@@ -392,7 +771,7 @@ class UserLogin extends React.Component
                   
                   };
                   
-                  this.setState({bar:p});
+                  this.setState({bar:pd});
             })
             axios.get("http://localhost:5000/don").then(result=>
             {
@@ -400,7 +779,7 @@ class UserLogin extends React.Component
                     don_nm.push(ob.INCOME_RANGE);
                     don_ss.push(ob.ss);
                 })
-                var p = {
+                var pe = {
                     series: don_ss,
                     options: {
                       chart: {
@@ -427,7 +806,7 @@ class UserLogin extends React.Component
                   
                   
                   };
-                this.setState({don:p})
+                this.setState({don:pe})
             
             })
           }
@@ -437,7 +816,7 @@ class UserLogin extends React.Component
             }
           }
         
-          handleOnFileLoad1 = (data) => {
+          handleOnFileLoad1 = async(data) => {
             console.log('---------------------------')
             console.log(data)
             var raja = []
@@ -462,11 +841,18 @@ class UserLogin extends React.Component
                 raja.push(x);
             }   
             console.log(raja);
-            axios.post('http://localhost:5000/data/hh',{data:raja})
-            .then(res => {
+            await axios.post('http://localhost:5000/data/hh',{data:raja})
+            .then( res => {
                 console.log("sent data to node js");
+                
             })
             console.log('---------------------------')
+            this.setState({loading:true});
+            setTimeout(() => {
+                    this.getDonut()
+                    this.setState({loading:false})
+              }, 3000);
+            
           }
         
           handleOnError1 = (err, file, inputElem, reason) => {
@@ -522,6 +908,11 @@ class UserLogin extends React.Component
                 console.log("sent data to node js");
             })
             console.log('---------------------------')
+            this.setState({loading:true});
+            setTimeout(() => {
+                    this.getPie()
+                    this.setState({loading:false})
+              }, 5000);
           }
         
           handleOnError2 = (err, file, inputElem, reason) => {
@@ -577,6 +968,17 @@ class UserLogin extends React.Component
                 console.log("sent data to node js");
             })
             console.log('---------------------------')
+            this.setState({loading:true});
+            setTimeout(async() => {
+                    this.getLine();
+                    this.getBar();
+                    this.getDonut();
+                        this.getFoodPie();
+                        this.getPharma();
+                        this.getNonfoodPie();
+                    this.setState({loading:false})
+              }, 3000);
+               
           }
         
           handleOnError3 = (err, file, inputElem, reason) => {
@@ -858,17 +1260,17 @@ class UserLogin extends React.Component
     
                                         </div>
                             </div>
-                            <div class="row border">
-                                    <div style={{width:'24%'}}>
+                            <div class="row border w3-animate-opacity">
+                                    <div style={{width:`24%`}}>
                                     <ReactApexChart options={this.state.pharma.options} series={this.state.pharma.series} type="pie" width={380} />
                                     </div>
-                                    <div style={{width:'24%'}}>
+                                    <div style={{width:`24%`}}>
                                     <ReactApexChart options={this.state.food.options} series={this.state.food.series} type="pie" width={380} />
                                     </div>
-                                    <div style={{width:'24%'}}>
+                                    <div style={{width:`24%`}}>
                                     <ReactApexChart options={this.state.non_food.options} series={this.state.non_food.series} type="pie" width={380} />
                                     </div>
-                                    <div style={{width:'28%'}}>
+                                    <div style={{width:`28%`}}>
                                     <ReactApexChart options={this.state.don.options} series={this.state.don.series} type="donut" />
                                     </div>
                             </div>
